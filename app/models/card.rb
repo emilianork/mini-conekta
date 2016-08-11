@@ -24,13 +24,19 @@ class Card < ApplicationRecord
   end
 
   def tokenize
-    token = "#token_#{SecureRandom.uuid}"
+    token = "token_#{SecureRandom.uuid}"
 
     # expired set to 10 minutes
-    redis.set(token, self.to_json, ex: 600, nx: true)
+    redis.set(token, self.to_encrypted_json, ex: 600, nx: true)
+
+    token
   end
 
-  def to_json
+  def to_permitted_json
+    { name: @name, last_digits: @number[-4, 4] }
+  end
+
+  def to_encrypted_json
     json = { name: @name, number: @number, cvc: @cvc }.to_json
     encrypted_json = Encryptor.encrypt(value: json)
 
@@ -46,5 +52,12 @@ class Card < ApplicationRecord
 
   def ==(card)
     self.name == card.name and self.number == card.number and self.cvc == card.cvc
+  end
+
+  def save
+    unless @errors.any?
+      token = self.tokenize
+      token
+    end
   end
 end
