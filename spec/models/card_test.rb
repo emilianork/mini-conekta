@@ -22,7 +22,7 @@ RSpec.describe Card, type: :model do
 
     card = Card.new(number: Faker::Name.name + Faker::Number.number(16))
     expect(card.errors).to have_key(:number)
-    
+
     card = Card.new
     expect(card.errors).to have_key(:number)
   end
@@ -36,5 +36,16 @@ RSpec.describe Card, type: :model do
 
     card = Card.new
     expect(card.errors).to have_key(:cvc)
+  end
+
+  it "encodes and decodes correctly" do
+    card = Card.new(name: Faker::Name.name, number: Faker::Number.number(16),
+                    cvc: Faker::Number.number(3))
+
+    encrypted_json = card.to_json
+
+    decrypted_card = Card.get_from_json(encrypted_json)
+
+    expect(card).to eq(decrypted_card)
   end
 end
