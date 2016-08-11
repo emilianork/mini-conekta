@@ -8,6 +8,16 @@ RSpec.describe Card, type: :model do
     expect(card.errors).to be_empty
   end
 
+  it "Validates expiration" do
+    card = Card.new(name: Faker::Name.name, number: Faker::Number.number(16),
+                    cvc: Faker::Number.number(3))
+
+    token = card.tokenize
+    ttl = $redis.ttl(token)
+    
+    expect(ttl).to be(600)
+  end
+
   it "has no valid name" do
     card = Card.new
     expect(card.errors).to have_key(:name)
@@ -42,7 +52,7 @@ RSpec.describe Card, type: :model do
     card = Card.new(name: Faker::Name.name, number: Faker::Number.number(16),
                     cvc: Faker::Number.number(3))
 
-    encrypted_json = card.to_json
+    encrypted_json = card.to_encrypted_json
 
     decrypted_card = Card.get_from_json(encrypted_json)
 
