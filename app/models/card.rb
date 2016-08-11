@@ -60,4 +60,8 @@ class Card < ApplicationRecord
       token
     end
   end
+
+  def self.destroy(token=nil)
+    $redis.del(token)
+  end
 end

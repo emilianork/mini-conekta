@@ -14,8 +14,18 @@ RSpec.describe Card, type: :model do
 
     token = card.tokenize
     ttl = $redis.ttl(token)
-    
+
     expect(ttl).to be(600)
+  end
+
+  it "destroy a token" do
+    card = Card.new(name: Faker::Name.name, number: Faker::Number.number(16),
+                    cvc: Faker::Number.number(3))
+
+    token = card.tokenize
+    registers_deleted = Card.destroy(token)
+
+    expect(registers_deleted).to be(1)
   end
 
   it "has no valid name" do
